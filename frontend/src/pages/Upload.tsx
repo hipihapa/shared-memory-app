@@ -88,7 +88,7 @@ const Upload = () => {
   return (
     <div className="min-h-screen flex flex-col">
 
-    <Header spaceId={spaceId} />
+    <Header spaceId={spaceId} isPublic={eventDetails && !eventDetails.mode} />
       
     <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white p-4 sm:p-8">
       <div className="max-w-lg mx-auto">

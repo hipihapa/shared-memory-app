@@ -3,15 +3,8 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuPortal,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ArrowDownToLine, CircleArrowLeft, GripVertical, HandHeart, Trash2, Upload as UploadIcon } from "lucide-react";
@@ -25,6 +18,7 @@ import { useParams } from "react-router-dom";
 import { QRCodeCanvas } from "qrcode.react";
 import { getMediaBySpace, deleteMedia } from "@/services/api";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 
 export default function Dashboard() {
@@ -39,6 +33,31 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedMediaIds, setSelectedMediaIds] = useState<string[]>([]);
+  const [eventDetails, setEventDetails] = useState<{ isPublic: boolean } | null>(null);
+  const [loadingEvent, setLoadingEvent] = useState(true);
+  const { currentUser } = useAuth();
+
+  useEffect(() => {
+    const fetchEventDetails = async () => {
+      if (!spaceId) return;
+      setLoadingEvent(true);
+      try {
+        const res = await fetch(`/api/spaces/id/${spaceId}`);
+        if (!res.ok) throw new Error('Failed to fetch event details');
+        const data = await res.json();
+        setEventDetails({
+          isPublic: !!data.isPublic,
+        });
+      } catch (err) {
+        setEventDetails({
+          isPublic: false,
+        });
+      } finally {
+        setLoadingEvent(false);
+      }
+    };
+    fetchEventDetails();
+  }, [spaceId]);
 
   useEffect(() => {
     const getMedia = async () => {
@@ -52,7 +71,7 @@ export default function Dashboard() {
         setMediaList(media); // Store full media objects
       } catch (err) {
         console.error("Error fetching media:", err);
-        setError(err.message || "Failed to load media. Please try again.");
+        setError((err as Error).message || "Failed to load media. Please try again.");
         setMediaList([]);
       } finally {
         setLoading(false);
@@ -173,7 +192,8 @@ export default function Dashboard() {
     <div className="min-h-screen flex flex-col relative">
       <Header
         spaceId={spaceId}
-        onSettingsClick={() => setShowSettings(true)}
+        onSettingsClick={currentUser ? () => setShowSettings(true) : undefined}
+        isPublic={eventDetails?.isPublic}
       />
 
       <div

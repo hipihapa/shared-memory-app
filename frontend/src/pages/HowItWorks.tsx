@@ -4,7 +4,8 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { QrCode, Upload, Lock, LockOpen, Camera, Share } from 'lucide-react';
+import { QrCode, Lock, LockOpen, Camera, Share } from 'lucide-react';
+import { FaCheck } from "react-icons/fa6";
 
 const HowItWorks = () => {
   return (
@@ -42,7 +43,7 @@ const HowItWorks = () => {
                     'Choose your privacy preferences',
                   ].map((item, index) => (
                     <li key={index} className="flex items-start">
-                      <svg className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      <FaCheck className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
                       {item}
                     </li>
                   ))}
@@ -78,7 +79,7 @@ const HowItWorks = () => {
                     'Share digitally via text, email, or social media',
                   ].map((item, index) => (
                     <li key={index} className="flex items-start">
-                      <svg className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      <FaCheck className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
                       {item}
                     </li>
                   ))}
@@ -108,7 +109,7 @@ const HowItWorks = () => {
                     'They can also take photos directly through the app',
                   ].map((item, index) => (
                     <li key={index} className="flex items-start">
-                      <svg className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      <FaCheck className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
                       {item}
                     </li>
                   ))}
@@ -147,7 +148,7 @@ const HowItWorks = () => {
                     'Toggle between modes at any time',
                   ].map((item, index) => (
                     <li key={index} className="flex items-start">
-                      <svg className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      <FaCheck className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
                       {item}
                     </li>
                   ))}

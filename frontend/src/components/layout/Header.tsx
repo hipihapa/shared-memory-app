@@ -13,7 +13,7 @@ interface HeaderProps {
   userName?: string;
   onSettingsClick?: () => void;
   spaceId?: string;
-  isPublic?: boolean; // <-- Add this line
+  isPublic?: boolean;
 }
 
 const Header: React.FC<HeaderProps> = ({ userName = '', onSettingsClick, spaceId, isPublic }) => {
@@ -31,7 +31,7 @@ const Header: React.FC<HeaderProps> = ({ userName = '', onSettingsClick, spaceId
   const isUploadPage = location.pathname === `/upload/${spaceId}`;
   const isDashboardPage = location.pathname === `/dashboard/${spaceId}`;
 
-  // Optionally, you can pass mode (public/private) as a prop or fetch it here if needed
+  // Optionally, i can pass mode (public/private) as a prop or fetch it here if needed
 
   // Sign out handler
   const handleSignOut = async () => {

@@ -10,6 +10,11 @@ import { useParams } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import { uploadMedia } from '@/services/api';
 
+import { CiLock } from "react-icons/ci";
+import { CiUnlock } from "react-icons/ci";
+import { FaFileImage } from "react-icons/fa";
+import { useAuth } from '@/contexts/AuthContext';
+
 const Upload = () => {
   const { spaceId } = useParams<{ spaceId: string }>();
   const [files, setFiles] = useState<File[]>([]);
@@ -19,6 +24,7 @@ const Upload = () => {
   const [eventDetails, setEventDetails] = useState<{ name: string; date: string; mode: boolean } | null>(null);
   const [loadingEvent, setLoadingEvent] = useState(true);
   const [isDragActive, setIsDragActive] = useState(false);
+  const { currentUser } = useAuth();
 
   useEffect(() => {
     const fetchEventDetails = async () => {
@@ -58,7 +64,7 @@ const Upload = () => {
   };
 
   const handleCapturePhoto = () => {
-    // In a real app, this would activate the device camera
+    // will fix this later to activate the device camera
     toast.info("Camera access would be requested here");
     setActiveTab('upload');
   };
@@ -69,14 +75,27 @@ const Upload = () => {
       return;
     }
 
+    // filtering out files that are not images or videos
+    const validFiles = files.filter(file => file.type.startsWith('image/') || file.type.startsWith('video/'));
+
+    if (validFiles.length === 0) {
+      toast.error("Only image and video files are allowed");
+      return;
+    }
+    if (validFiles.length < files.length) {
+      toast.warning("Some files were not images or videos and were skipped");
+      setFiles(validFiles);
+    }
+
     setIsUploading(true);
 
     try {
-      const uploadPromises = files.map(file =>
+      // Upload only validFiles, not files
+      const uploadPromises = validFiles.map(file =>
         uploadMedia(spaceId, file, guestName || "Guest")
       );
       await Promise.all(uploadPromises);
-      toast.success(`${files.length} files uploaded successfully. View in dashboard`);
+      toast.success(`${validFiles.length} files uploaded successfully. View in dashboard`);
       setFiles([]);
     } catch (error) {
       toast.error("Failed to upload files. Please try again.");
@@ -99,17 +118,18 @@ const Upload = () => {
             <>
               <h1 className="text-3xl font-bold mb-2">{eventDetails?.name}</h1>
               <p className="text-muted-foreground">{eventDetails?.date}</p>
-              {eventDetails && (
+              {/* Only show mode badge if user is authenticated */}
+              {eventDetails && currentUser && (
                 <div className="mt-4 inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-sm">
                   {eventDetails.mode ? (
                     <>
                       <span className="mr-1">Private Mode</span>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                      <CiLock className='w-6 h-5 text-bold text-primary' />
                     </>
                   ) : (
                     <>
                       <span className="mr-1">Public Mode</span>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
+                      <CiUnlock className='w-6 h-5 text-bold text-primary' />
                     </>
                   )}
                 </div>
@@ -217,7 +237,7 @@ const Upload = () => {
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m22 8-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M18 8h-6V2"/><circle cx="10" cy="14" r="2"/><path d="m14 18-1-1-2 2-2-2-1 1"/></svg>
+                              <FaFileImage className='w-10 h-10' />
                             </div>
                           )}
                         </div>

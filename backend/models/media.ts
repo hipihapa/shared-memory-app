@@ -5,6 +5,7 @@ interface IMedia extends Document {
   fileName: string;
   fileUrl: string;
   fileType: string;
+  fileSize: number;
   uploadedBy: string;
   uploadedAt: Date;
 }
@@ -14,6 +15,7 @@ const MediaSchema: Schema = new mongoose.Schema({
   fileName: { type: String, required: true },
   fileUrl: { type: String, required: true },
   fileType: { type: String, required: true },
+  fileSize: { type: Number, required: true },
   uploadedBy: { type: String, default: 'Guest' },
   uploadedAt: { type: Date, default: Date.now }
 });

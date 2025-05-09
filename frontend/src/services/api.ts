@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL;
 
 const api = axios.create({
   baseURL: API_URL,
@@ -86,6 +86,15 @@ export const updateSpaceMode = async (spaceId, isPublic) => {
   }
 }
 
+// Paystack: Initialize payment
+export const initializePaystackPayment = async (paymentData) => {
+  try {
+    const response = await api.post('/spaces/paystack/initialize', paymentData);
+    return response.data;
+  } catch (error) {
+    throw error?.response?.data || error;
+  }
+};
+
 
 export default api;
-

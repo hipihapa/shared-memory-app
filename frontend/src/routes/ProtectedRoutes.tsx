@@ -6,7 +6,9 @@ const ProtectedRoutes: React.FC <{ children:React.ReactNode }> = () => {
   const { currentUser, isLoading } = useContext(AuthContext);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div className="flex justify-center items-center min-h-[40vh]">
+    <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-purple-500"></div>
+  </div>;
   }
 
   if (!currentUser) {

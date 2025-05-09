@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,9 +11,11 @@ import Footer from '@/components/layout/Footer';
 import { auth, googleProvider } from '@/lib/firebase';
 import { signInWithPopup, createUserWithEmailAndPassword } from 'firebase/auth';
 import { createSpace } from '@/services/api';
+import { useLocation } from 'react-router-dom';
 
 const Register = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [step, setStep] = useState<number>(1);
   const [formData, setFormData] = useState({
     firstName: '',
@@ -134,17 +136,19 @@ const Register = () => {
         partnerLastName: formData.partnerLastName,
         eventDate: formData.eventDate,
         eventType: formData.eventType,
-        isPublic: true // Default to public
+        isPublic: true, // Default to public
+        plan: plan
       };
       
       const newSpace = await createSpace(spaceData);
       
       // Show success toast
-      toast.success("Account and memory space created successfully! Redirecting to your dashboard...");
+      toast.success("Space created successfully! Redirecting to your dashboard...");
       
       // Redirect to dashboard
       setTimeout(() => {
         navigate(`/upload/${newSpace._id}`); 
+        // navigate(`/dashboard/${newSpace._id}`);
       }, 2000);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
@@ -155,8 +159,21 @@ const Register = () => {
     }
   };
 
+  // Get plan from URL
+const searchParams = new URLSearchParams(location.search);
+const plan = searchParams.get('plan');
+
+// Redirect if no plan is selected
+useEffect(() => {
+  if (!plan) {
+    toast.error("Please select a plan before registering.");
+    navigate("/pricing");
+  }
+}, [plan, navigate]);
+
+
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col"> 
       <Header />
       
       <main className="flex-1 py-16 px-4">

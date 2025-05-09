@@ -69,7 +69,7 @@ const Pricing = () => {
               </p>
               <div className="flex flex-wrap justify-center gap-x-8 gap-y-2">
                 {[
-                  "Unlimited Guest Uploads", 
+                  "Free Guest Uploads", 
                   "QR Code Generation",
                   "Public/Private Mode", 
                   "Mobile-Friendly Interface"
@@ -118,45 +118,48 @@ const plans = [
     price: "0",
     period: "forever",
     features: [
-      "10 photo storage (50MB)",
-      "3-month memory space access",
+      "10 media storage (50MB)",
+      "2-months memory space access",
       "Basic photo organization",
       "Download individual photos"
     ],
     ctaText: "Get Started Free",
-    ctaLink: "/register",
+    ctaLink: "/register?plan=basic",
     highlight: false
   },
   {
     name: "Premium",
     description: "Best for weddings & large events",
-    price: "35",
+    price: "20",
     period: "one-time",
     features: [
-      "500 photo storage (1GB)",
+      "500 media storage (1GB)",
       "1-year memory space access",
-      "Advanced organization & albums",
-      "Bulk download & sharing",
-      "Remove MemoryShare branding"
+      "Advanced organization",
+      "Download individual photos"
     ],
     ctaText: "Choose Premium",
-    ctaLink: "/register?plan=premium",
+    // ctaLink: "/register?plan=premium",
+    // ctaLink: "/payment?plan=premium",
+    ctaLink: "/payment?plan=premium",
     highlight: true
   },
   {
     name: "Forever",
     description: "Permanent memory preservation",
-    price: "70",
+    price: "50",
     period: "one-time",
     features: [
-      "1000 photo storage (5GB)",
+      "3000 media storage (5GB)",
       "Lifetime memory space access",
       "Priority support",
       "All Premium features",
-      "Annual backup service"
+      "Multiple media downloads"
     ],
     ctaText: "Choose Forever",
-    ctaLink: "/register?plan=forever",
+    // ctaLink: "/register?plan=forever",
+    // ctaLink: "/payment?plan=forever",
+    ctaLink: "/payment?plan=forever",
     highlight: false
   }
 ];
@@ -175,8 +178,8 @@ const faqs = [
     answer: "Bulk downloading is available on the Premium and Forever plans. The Basic plan allows downloading individual photos only."
   },
   {
-    question: "Do you offer refunds?",
-    answer: "We offer a 14-day money-back guarantee for paid plans if you're not satisfied with our service."
+    question: "What file types are supported?",
+    answer: "Guests can upload standard photo (JPEG, PNG) and video (MP4, MOV) files. We optimize them while keeping quality intact."
   }
 ];
 

@@ -86,7 +86,7 @@ const Header: React.FC<HeaderProps> = ({ userName = '', onSettingsClick, spaceId
                 <Link to="/login">Login</Link>
               </Button>
               <Button size="sm" asChild>
-                <Link to="/register">Get Started</Link>
+                <Link to="/pricing">Get Started</Link>
               </Button>
             </div>
           )}

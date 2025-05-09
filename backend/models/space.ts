@@ -11,6 +11,7 @@ interface ISpace extends Document {
   eventType: String;
   isPublic: boolean;
   createdAt: Date;
+  plan: string;
 }
 
 const SpaceSchema: Schema = new mongoose.Schema({
@@ -22,6 +23,7 @@ const SpaceSchema: Schema = new mongoose.Schema({
   partnerLastName: { type: String, required: true },
   eventDate: { type: Date, required: true },
   isPublic: { type: Boolean, default: true },
+  plan: { type: String, default: 'basic' },
   createdAt: { type: Date, default: Date.now } 
 });
 

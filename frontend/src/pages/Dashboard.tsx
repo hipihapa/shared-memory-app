@@ -1,6 +1,20 @@
 import Header from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
-import { CircleArrowLeft, Upload as UploadIcon } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { ArrowDownToLine, CircleArrowLeft, GripVertical, HandHeart, Trash2, Upload as UploadIcon } from "lucide-react";
 import { RxOpenInNewWindow } from "react-icons/rx";
 import { useNavigate } from "react-router-dom";
 import SettingsSheet from "./Settings";
@@ -24,6 +38,7 @@ export default function Dashboard() {
   const [mediaList, setMediaList] = useState<any[]>([]); 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedMediaIds, setSelectedMediaIds] = useState<string[]>([]);
 
   useEffect(() => {
     const getMedia = async () => {
@@ -53,13 +68,39 @@ export default function Dashboard() {
   };
 
   // Download a specific image
-  const handleImageDownload = (src: string, index: number) => {
-    const link = document.createElement("a");
-    link.href = src;
-    link.download = `image-${index + 1}.jpg`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleImageDownload = async (src: string, index: number) => {
+    try {
+      const response = await fetch(src, { mode: "cors" });
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `image-${index + 1}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      alert("Failed to download image.");
+    }
+  };
+
+  // Download all selected medias
+  const handleImageDownloadSelected = async (src: string, index: number) => {
+    try {
+      const response = await fetch(src, { mode: "cors" });
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `image-${index + 1}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      alert("Failed to download image.");
+    }
   };
 
   // The URL to encode in the QR code
@@ -81,6 +122,34 @@ export default function Dashboard() {
   const openPreview = (url: string, mediaId: string) => {
     setPreviewImg(url);
     setSelectedMediaId(mediaId);
+  };
+
+  // Toggle selection for a media item
+  const toggleSelectMedia = (mediaId: string) => {
+    setSelectedMediaIds((prev) =>
+      prev.includes(mediaId)
+        ? prev.filter((id) => id !== mediaId)
+        : [...prev, mediaId]
+    );
+  };
+
+  // Delete all selected media items
+  const handleDeleteSelected = async () => {
+    if (!spaceId || selectedMediaIds.length === 0) return;
+    try {
+      await Promise.all(
+        selectedMediaIds.map((mediaId) => deleteMedia(spaceId, mediaId))
+      );
+      setMediaList((prev) => prev.filter((item) => !selectedMediaIds.includes(item._id)));
+      setSelectedMediaIds([]);
+      toast.success("Selected media deleted successfully!");
+      if (selectedMediaIds.includes(selectedMediaId ?? "")) {
+        setPreviewImg(null);
+        setSelectedMediaId(null);
+      }
+    } catch (err) {
+      toast.error("Failed to delete selected media. Please try again.");
+    }
   };
 
   // Delete a specific media item
@@ -110,16 +179,18 @@ export default function Dashboard() {
       <div
         className={`p-4 transition-all duration-300 ${
           showSettings ? "backdrop-blur-sm" : ""
-        }`}
+        }`} 
       >
         <div className="justify-between flex">
           <CircleArrowLeft
             className="ml-20 mt-3 text-purple-400 hover:text-purple-300"
             onClick={handleUploadClick}
           />
+          <div className="flex gap-4 items-center">
           <Button
             size="sm"
-            className="flex flex-col items-center justify-center gap-2 p-5 mr-20 mt-3 rounded-xl shadow-lg bg-purple-500 hover:bg-purple-400"
+            className={`flex flex-col items-center justify-center gap-2 p-5 mt-3 rounded-xl shadow-lg bg-purple-500 hover:bg-purple-400
+              ${selectedMediaIds.length === 0 ? "mr-20" : ""}`}
             onClick={() => setShowQr(true)}
           >
             <div className="flex gap-2 items-center">
@@ -127,6 +198,42 @@ export default function Dashboard() {
               <span className="text-sm">Generate QRCode</span>
             </div>
           </Button>
+
+          {selectedMediaIds.length > 0 && (
+            <div className="">
+              <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <GripVertical className="mt-3 mr-20 text-purple-400 cursor-pointer" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56 mr-4 cursor-pointer">
+              {/* download */}
+              <div className="flex items-center hover:bg-accent hover:rounded-sm"
+                onClick={async () => {
+                  await Promise.all(
+                    selectedMediaIds.map(async (mediaId) => {
+                      const media = mediaList.find(item => item._id === mediaId);
+                      if (media && media.fileUrl) {
+                        await handleImageDownloadSelected(media.fileUrl, mediaList.indexOf(media));
+                      }
+                    })
+                  );
+                  setSelectedMediaIds([]); // unselect all after download
+                }}
+              >
+                <ArrowDownToLine className="ml-1 w-4 h-4" />
+                <DropdownMenuLabel className="font-poppins font-thin">Download Media</DropdownMenuLabel>
+              </div>
+              <DropdownMenuSeparator />
+              {/* delete */}
+              <div className="flex items-center hover:bg-accent hover:rounded-sm" onClick={handleDeleteSelected}>
+              <Trash2 className="ml-1 w-4 h-4" />
+              <DropdownMenuLabel className="font-poppins font-thin">Delete Media</DropdownMenuLabel>
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
+            </div>
+          )}
+          </div>
 
           {showQr && (
             <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
@@ -155,9 +262,11 @@ export default function Dashboard() {
             </div>
           )}
         </div>
-        <div className="p-4 mt-3">
+        <div className="p-4 mt-3" onClick={e => e.stopPropagation()}>
           {loading ? (
-            <div className="text-center text-muted-foreground">Loading...</div>
+            <div className="flex justify-center items-center min-h-[40vh]">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-purple-500"></div>
+            </div>
           ) : mediaList.length === 0 ? (
             <div className="flex justify-center items-center min-h-[40vh]">
               <Button
@@ -171,14 +280,30 @@ export default function Dashboard() {
                 </div>
               </Button>
             </div>
-          ) : (
-            <div className="items-center justify-center pl-20 pr-20">
+          ) 
+          : (
+            <div className="items-center justify-center pl-20 pr-20" onClick={e => e.stopPropagation()}>
               <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-4 space-y-4">
                 {mediaList.map((item, index) => (
                   <div
                     key={item._id}
-                    className="relative group break-inside-avoid rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300"
+                    className={`relative group break-inside-avoid rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 border-2 ${
+                      selectedMediaIds.includes(item._id)
+                        ? "border-purple-500"
+                        : "border-transparent"
+                    }`}
+                    onClick={e => {
+                      e.stopPropagation();
+                      toggleSelectMedia(item._id);
+                    }}
                   >
+                    <input
+                      type="checkbox"
+                      checked={selectedMediaIds.includes(item._id)}
+                      onChange={() => toggleSelectMedia(item._id)}
+                      className="absolute top-2 left-2 z-10"
+                      onClick={(e) => e.stopPropagation()}
+                    />
                     {/* Check if src is a valid image or video URL */}
                     {item.fileUrl && /\.(jpe?g|png|gif|bmp|webp)$/i.test(item.fileUrl) ? (
                       <img
@@ -200,13 +325,19 @@ export default function Dashboard() {
                     <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
                       <button
                         className="bg-white text-purple-600 px-4 py-2 rounded shadow-md mr-2 hover:bg-purple-100"
-                        onClick={() => openPreview(item.fileUrl, item._id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openPreview(item.fileUrl, item._id);
+                        }}
                       >
                         <RxOpenInNewWindow />
                       </button>
                       <button
                         className="bg-white text-purple-600 px-4 py-2 rounded shadow-md hover:bg-purple-100"
-                        onClick={() => handleImageDownload(item.fileUrl, index)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleImageDownload(item.fileUrl, index);
+                        }}
                       >
                         <BsDownload />
                       </button>
@@ -215,7 +346,8 @@ export default function Dashboard() {
                 ))}
               </div>
             </div>
-          )}
+          )
+          }
         </div>
       </div>
 

@@ -16,6 +16,7 @@ import Dashboard from "../pages/Dashboard";
 import Settings from "../pages/Settings";
 import ProtectedRoute from './ProtectedRoutes';
 import ResetPassword from '@/pages/ResetPassword';
+import Payment from '@/pages/Payment';
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
             <Route path="/forgot-password" element={<ResetPassword />} />
+            <Route path="/payment" element={<Payment />} />
 
             <Route element={<ProtectedRoute children={''}/>}>
             <Route path="/upload/:spaceId" element={<Upload />} />

@@ -183,7 +183,7 @@ const HowItWorks = () => {
               Create your memory space in minutes and start collecting photos and videos from your special event.
             </p>
             <Button size="lg" variant="secondary" asChild>
-              <Link to="/register">Create Your Memory Space</Link>
+              <Link to="/pricing">Create Your Memory Space</Link>
             </Button>
           </div>
         </section>

@@ -14,10 +14,13 @@ import { CiLock } from "react-icons/ci";
 import { CiUnlock } from "react-icons/ci";
 import { FaFileImage } from "react-icons/fa";
 import { useAuth } from '@/contexts/AuthContext';
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "../store";
+import { addFiles, removeFile, clearFiles } from "@/store/slices/uploadFileSlice";
 
 const Upload = () => {
   const { spaceId } = useParams<{ spaceId: string }>();
-  const [files, setFiles] = useState<File[]>([]);
+  // const [files, setFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [guestName, setGuestName] = useState('');
   const [activeTab, setActiveTab] = useState<string>('upload');
@@ -52,15 +55,71 @@ const Upload = () => {
     fetchEventDetails();
   }, [spaceId]);
 
+  const [mediaCount, setMediaCount] = useState<number>(0);
+  const [maxAllowed, setMaxAllowed] = useState<number>(10); // default to basic
+  const [quotaLoading, setQuotaLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const fetchQuota = async () => {
+      if (!spaceId) return;
+      setQuotaLoading(true);
+      try {
+        // Fetch space details to get plan
+        const res = await fetch(`/api/spaces/id/${spaceId}`);
+        if (!res.ok) throw new Error('Failed to fetch space details');
+        const data = await res.json();
+        const plan = data.plan || 'basic';
+        let max = 10;
+        if (plan === 'premium') max = 500;
+        else if (plan === 'forever') max = 3000;
+        setMaxAllowed(max);
+
+        // Fetch current media count
+        const mediaRes = await fetch(`/api/spaces/${spaceId}/media`);
+        if (!mediaRes.ok) throw new Error('Failed to fetch media');
+        const mediaData = await mediaRes.json();
+        setMediaCount(mediaData.length || 0);
+      } catch (err) {
+        setMediaCount(0);
+        setMaxAllowed(10);
+      } finally {
+        setQuotaLoading(false);
+      }
+    };
+    fetchQuota();
+  }, [spaceId]);
+
+  const remainingQuota = maxAllowed - mediaCount;
+
+  const dispatch = useDispatch();
+  const files = useSelector((state: RootState) => state.uploadFiles.files);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const selectedFiles = Array.from(e.target.files);
-      setFiles(prevFiles => [...prevFiles, ...selectedFiles]);
+      let allowedFiles: File[] = [];
+      // Prevent selecting more than remaining quota
+      if (selectedFiles.length + files.length > remainingQuota) {
+        toast.warning(
+          `You can only upload ${remainingQuota} more file(s) for this space.`
+        );
+        // Only allow up to the quota
+        allowedFiles = selectedFiles.slice(0, remainingQuota - files.length);
+      } else {
+        allowedFiles = selectedFiles;
+      }
+      if (allowedFiles.length > 0) {
+        dispatch(addFiles(allowedFiles));
+      }
     }
   };
 
   const handleRemoveFile = (index: number) => {
-    setFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
+    dispatch(removeFile(index));
+  };
+
+  const handleClearFiles = () => {
+    dispatch(clearFiles());
   };
 
   const handleCapturePhoto = () => {
@@ -74,6 +133,10 @@ const Upload = () => {
       toast.error("Please select at least one file to upload");
       return;
     }
+    if (files.length > remainingQuota) {
+      toast.error(`You can only upload ${remainingQuota} more file(s) for this space.`);
+      return;
+    }
 
     // filtering out files that are not images or videos
     const validFiles = files.filter(file => file.type.startsWith('image/') || file.type.startsWith('video/'));
@@ -84,7 +147,9 @@ const Upload = () => {
     }
     if (validFiles.length < files.length) {
       toast.warning("Some files were not images or videos and were skipped");
-      setFiles(validFiles);
+      // setFiles(validFiles);
+      dispatch(clearFiles());
+      dispatch(addFiles(validFiles));
     }
 
     setIsUploading(true);
@@ -96,7 +161,8 @@ const Upload = () => {
       );
       await Promise.all(uploadPromises);
       toast.success(`${validFiles.length} files uploaded successfully. View in dashboard`);
-      setFiles([]);
+      // setFiles([]);
+      dispatch(clearFiles());
     } catch (error) {
       toast.error("Failed to upload files. Please try again.");
     } finally {
@@ -113,7 +179,11 @@ const Upload = () => {
       <div className="max-w-lg mx-auto">
         <div className="text-center mb-10">
           {loadingEvent ? (
-            <div className="animate-pulse h-8 w-1/2 mx-auto bg-gray-200 rounded mb-2" />
+            <>
+            <div className="animate-pulse h-8 w-1/2 mx-auto bg-gray-200 rounded-lg mb-2" />
+            <div className="animate-pulse h-4 w-1/2 mx-auto bg-gray-200 rounded-lg mb-3" />
+            <div className="animate-pulse h-6 w-1/2 mx-auto bg-gray-200 rounded-lg mb-2" />
+            </>
           ) : (
             <>
               <h1 className="text-3xl font-bold mb-2">{eventDetails?.name}</h1>
@@ -183,7 +253,18 @@ const Upload = () => {
                       setIsDragActive(false);
                       if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
                         const droppedFiles = Array.from(e.dataTransfer.files);
-                        setFiles(prevFiles => [...prevFiles, ...droppedFiles]);
+                        let allowedFiles: File[] = [];
+                        if (droppedFiles.length + files.length > remainingQuota) {
+                          toast.warning(
+                            `You can only upload ${remainingQuota} more file(s) for this space.`
+                          );
+                          allowedFiles = droppedFiles.slice(0, remainingQuota - files.length);
+                        } else {
+                          allowedFiles = droppedFiles;
+                        }
+                        if (allowedFiles.length > 0) {
+                          dispatch(addFiles(allowedFiles));
+                        }
                       }
                     }}
                   >

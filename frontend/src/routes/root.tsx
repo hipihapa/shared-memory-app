@@ -17,6 +17,7 @@ import Settings from "../pages/Settings";
 import ProtectedRoute from './ProtectedRoutes';
 import ResetPassword from '@/pages/ResetPassword';
 import Payment from '@/pages/Payment';
+import ScrollToTop from '@/components/ScrollToTop';
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+        <ScrollToTop/>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/register" element={<Register />} />
@@ -34,9 +36,10 @@ const App = () => (
             <Route path="/forgot-password" element={<ResetPassword />} />
             <Route path="/payment" element={<Payment />} />
 
-            <Route element={<ProtectedRoute children={''}/>}>
             <Route path="/upload/:spaceId" element={<Upload />} />
             <Route path="/dashboard/:spaceId" element={<Dashboard />} />
+
+            <Route element={<ProtectedRoute children={''}/>}>
             <Route path="dashboard/settings/:spaceId/" element={<Settings onClose={undefined} />} />
             </Route>
 

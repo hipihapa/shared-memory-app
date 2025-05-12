@@ -20,7 +20,6 @@ import { addFiles, removeFile, clearFiles } from "@/store/slices/uploadFileSlice
 
 const Upload = () => {
   const { spaceId } = useParams<{ spaceId: string }>();
-  // const [files, setFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [guestName, setGuestName] = useState('');
   const [activeTab, setActiveTab] = useState<string>('upload');
@@ -123,7 +122,7 @@ const Upload = () => {
   };
 
   const handleCapturePhoto = () => {
-    // will fix this later to activate the device camera
+    // todo: i will fix this later to activate the device camera
     toast.info("Camera access would be requested here");
     setActiveTab('upload');
   };
@@ -147,7 +146,6 @@ const Upload = () => {
     }
     if (validFiles.length < files.length) {
       toast.warning("Some files were not images or videos and were skipped");
-      // setFiles(validFiles);
       dispatch(clearFiles());
       dispatch(addFiles(validFiles));
     }

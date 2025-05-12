@@ -68,7 +68,7 @@ export default function Dashboard() {
           throw new Error("Space ID is missing");
         }
         const media = await getMediaBySpace(spaceId);
-        setMediaList(media); // Store full media objects
+        setMediaList(Array.isArray(media) ? media : []);
       } catch (err) {
         console.error("Error fetching media:", err);
         setError((err as Error).message || "Failed to load media. Please try again.");
@@ -124,6 +124,7 @@ export default function Dashboard() {
 
   // The URL to encode in the QR code
   const uploadUrl = `${window.location.origin}/upload/${spaceId}`;
+  // const uploadUrl = `${import.meta.env.VITE_FRONTEND_URL}/upload/${spaceId}`;
 
   // Download QR code as image
   const handleDownload = () => {
@@ -203,21 +204,23 @@ export default function Dashboard() {
       >
         <div className="justify-between flex">
           <CircleArrowLeft
-            className="ml-20 mt-3 text-purple-400 hover:text-purple-300"
+            className="ml-10 mt-3 text-purple-400 hover:text-purple-300"
             onClick={handleUploadClick}
           />
           <div className="flex gap-4 items-center">
-          <Button
-            size="sm"
-            className={`flex flex-col items-center justify-center gap-2 p-5 mt-3 rounded-xl shadow-lg bg-purple-500 hover:bg-purple-400
-              ${selectedMediaIds.length === 0 ? "mr-20" : ""}`}
-            onClick={() => setShowQr(true)}
-          >
-            <div className="flex gap-2 items-center">
-              <HiMiniQrCode />
-              <span className="text-sm">Generate QRCode</span>
-            </div>
-          </Button>
+          {currentUser && (
+            <Button
+              size="sm"
+              className={`flex flex-col items-center justify-center gap-2 p-5 mt-3 rounded-xl shadow-lg bg-purple-500 hover:bg-purple-400
+                ${selectedMediaIds.length === 0 ? "mr-10" : ""}`}
+              onClick={() => setShowQr(true)}
+            >
+              <div className="flex gap-2 items-center">
+                <HiMiniQrCode />
+                <span className="text-sm">Generate QRCode</span>
+              </div>
+            </Button>
+          )}
 
           {selectedMediaIds.length > 0 && (
             <div className="">

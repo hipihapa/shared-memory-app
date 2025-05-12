@@ -202,11 +202,11 @@ const faqs = [
   },
   {
     question: "How many photos can be uploaded?",
-    answer: "Our basic plan includes 500MB of storage, which is approximately 10 photos. Premium plans offer more storage options."
+    answer: "Our basic plan includes 50MB of storage, which is approximately 10 photos. Premium plans offer more storage options."
   },
   {
     question: "Can I download all photos at once?",
-    answer: "Yes, you can download all photos as a zip file from your dashboard. You can also select specific photos to download."
+    answer: "Yes, you can download all photos as files from your dashboard. You can also select specific photos to download."
   },
   {
     question: "What types of files can be uploaded?",
@@ -214,7 +214,7 @@ const faqs = [
   },
   {
     question: "How long will my memory space be available?",
-    answer: "Your basic memory space will be available for 6 months after your event date. Premium plans offer extended or permanent storage options."
+    answer: "Your basic memory space will be available for 1 month after your event date. Premium plans offer extended or permanent storage options."
   },
   {
     question: "Can I remove inappropriate content?",

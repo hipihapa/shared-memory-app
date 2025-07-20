@@ -13,9 +13,9 @@ export default defineConfig(({ mode }) => ({
           '/api': 'http://localhost:5000'
         }
       : undefined,
-      allowedHosts: [
-        "35df-154-160-26-213.ngrok-free.app"
-      ]
+      // allowedHosts: [
+      //   "35df-154-160-26-213.ngrok-free.app"
+      // ]
   },
   plugins: [
     react(),

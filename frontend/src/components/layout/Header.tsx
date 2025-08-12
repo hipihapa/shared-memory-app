@@ -46,7 +46,7 @@ const Header: React.FC<HeaderProps> = ({ userName = '', onSettingsClick, spaceId
   };
 
   return (
-    <header className="w-full py-4 px-6 bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-10">
+    <header className="w-full py-4 px-6 bg-white/30 backdrop-blur-md shadow-sm sticky top-0 z-10">
       <div className="container max-w-6xl mx-auto flex justify-between items-center">
         {currentUser ? (
           <span className="flex items-center cursor-default select-none">
@@ -108,10 +108,10 @@ const Header: React.FC<HeaderProps> = ({ userName = '', onSettingsClick, spaceId
               {/* On other pages: show login/get started */}
               {!isUploadPage && !isDashboardPage && (
                 <div className="flex items-center space-x-3">
-                  <Button variant="outline" size="sm" asChild>
+                  <Button variant="outline" size="sm" className='rounded-[10px]' asChild>
                     <Link to="/login">Login</Link>
                   </Button>
-                  <Button size="sm" asChild>
+                  <Button size="sm" className='rounded-[10px]' asChild>
                     <Link to="/pricing">Get Started</Link>
                   </Button>
                 </div>

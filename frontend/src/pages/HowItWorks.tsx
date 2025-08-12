@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
@@ -7,27 +7,77 @@ import { Link } from 'react-router-dom';
 import { QrCode, Lock, LockOpen, Camera, Share } from 'lucide-react';
 import { FaCheck } from "react-icons/fa6";
 
+// Custom hook for intersection observer
+const useInView = (options: IntersectionObserverInit = {}) => {
+  const [isInView, setIsInView] = useState(false);
+  const ref = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => {
+      setIsInView(entry.isIntersecting);
+    }, { threshold: 0.1, ...options });
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => {
+      if (ref.current) {
+        observer.unobserve(ref.current);
+      }
+    };
+  }, [options]);
+
+  return [ref, isInView] as const;
+};
+
 const HowItWorks = () => {
+  // Animation refs for each section
+  const [heroRef, heroInView] = useInView();
+  const [step1Ref, step1InView] = useInView();
+  const [step2Ref, step2InView] = useInView();
+  const [step3Ref, step3InView] = useInView();
+  const [step4Ref, step4InView] = useInView();
+  const [faqRef, faqInView] = useInView();
+  const [ctaRef, ctaInView] = useInView();
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="py-16 md:py-24 bg-purple-100">
+        <section ref={heroRef} className="py-16 md:py-24 bg-purple-100">
           <div className="container max-w-6xl mx-auto px-6 text-center">
-            <h1 className="text-4xl font-bold mb-6">How MemoryShare Works</h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <h1 
+              className={`text-4xl font-bold mb-6 transition-all duration-1000 ${
+                heroInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+              }`}
+              style={{ transitionDelay: '0.2s' }}
+            >
+              How MemoryShare Works
+            </h1>
+            <p 
+              className={`text-lg text-muted-foreground max-w-2xl mx-auto transition-all duration-1000 ${
+                heroInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+              }`}
+              style={{ transitionDelay: '0.4s' }}
+            >
               A simple way to collect and share photos and videos from your special events.
             </p>
           </div>
         </section>
         
         {/* Steps Section */}
-        <section className="py-16 md:py-24">
+        <section ref={step1Ref} className="py-16 md:py-24">
           <div className="container max-w-6xl mx-auto px-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-              <div>
+              <div 
+                className={`transition-all duration-1000 ${
+                  step1InView ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'
+                }`}
+                style={{ transitionDelay: '0.2s' }}
+              >
                 <div className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-sm mb-4">
                   Step 1
                 </div>
@@ -42,14 +92,25 @@ const HowItWorks = () => {
                     'Get a custom URL like FrankElla2025',
                     'Choose your privacy preferences',
                   ].map((item, index) => (
-                    <li key={index} className="flex items-start">
+                    <li 
+                      key={index} 
+                      className={`flex items-start transition-all duration-1000 ${
+                        step1InView ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'
+                      }`}
+                      style={{ transitionDelay: `${0.4 + index * 0.1}s` }}
+                    >
                       <FaCheck className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
                       {item}
                     </li>
                   ))}
                 </ul>
               </div>
-              <div className="bg-purple-100 p-8 rounded-2xl flex items-center justify-center">
+              <div 
+                className={`bg-purple-100 p-8 rounded-2xl flex items-center justify-center transition-all duration-1000 hover:shadow-xl ${
+                  step1InView ? 'opacity-100 translate-x-0 scale-100' : 'opacity-0 translate-x-8 scale-95'
+                }`}
+                style={{ transitionDelay: '0.3s' }}
+              >
                 <Share className="w-32 h-32 text-primary/70" />
               </div>
             </div>
@@ -57,13 +118,23 @@ const HowItWorks = () => {
         </section>
         
         {/* Step 2 */}
-        <section className="py-16 md:py-24 bg-secondary/30">
+        <section ref={step2Ref} className="py-16 md:py-24 bg-secondary/30">
           <div className="container max-w-6xl mx-auto px-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-              <div className="order-last md:order-first bg-white p-8 rounded-2xl flex items-center justify-center shadow-md">
+              <div 
+                className={`order-last md:order-first bg-white p-8 rounded-2xl flex items-center justify-center shadow-md transition-all duration-1000 hover:shadow-xl ${
+                  step2InView ? 'opacity-100 translate-x-0 scale-100' : 'opacity-0 -translate-x-8 scale-95'
+                }`}
+                style={{ transitionDelay: '0.3s' }}
+              >
                 <QrCode className="w-32 h-32 text-primary/70" />
               </div>
-              <div>
+              <div 
+                className={`transition-all duration-1000 ${
+                  step2InView ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'
+                }`}
+                style={{ transitionDelay: '0.2s' }}
+              >
                 <div className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-sm mb-4">
                   Step 2
                 </div>
@@ -78,7 +149,13 @@ const HowItWorks = () => {
                     'Include it on invitations or thank-you cards',
                     'Share digitally via text, email, or social media',
                   ].map((item, index) => (
-                    <li key={index} className="flex items-start">
+                    <li 
+                      key={index} 
+                      className={`flex items-start transition-all duration-1000 ${
+                        step2InView ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'
+                      }`}
+                      style={{ transitionDelay: `${0.4 + index * 0.1}s` }}
+                    >
                       <FaCheck className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
                       {item}
                     </li>
@@ -90,10 +167,15 @@ const HowItWorks = () => {
         </section>
         
         {/* Step 3 */}
-        <section className="py-16 md:py-24">
+        <section ref={step3Ref} className="py-16 md:py-24">
           <div className="container max-w-6xl mx-auto px-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-              <div>
+              <div 
+                className={`transition-all duration-1000 ${
+                  step3InView ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'
+                }`}
+                style={{ transitionDelay: '0.2s' }}
+              >
                 <div className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-sm mb-4">
                   Step 3
                 </div>
@@ -108,14 +190,25 @@ const HowItWorks = () => {
                     'Guests enter their name and upload photos/videos',
                     'They can also take photos directly through the app',
                   ].map((item, index) => (
-                    <li key={index} className="flex items-start">
+                    <li 
+                      key={index} 
+                      className={`flex items-start transition-all duration-1000 ${
+                        step3InView ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'
+                      }`}
+                      style={{ transitionDelay: `${0.4 + index * 0.1}s` }}
+                    >
                       <FaCheck className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
                       {item}
                     </li>
                   ))}
                 </ul>
               </div>
-              <div className="bg-purple-100 p-8 rounded-2xl flex items-center justify-center">
+              <div 
+                className={`bg-purple-100 p-8 rounded-2xl flex items-center justify-center transition-all duration-1000 hover:shadow-xl ${
+                  step3InView ? 'opacity-100 translate-x-0 scale-100' : 'opacity-0 translate-x-8 scale-95'
+                }`}
+                style={{ transitionDelay: '0.3s' }}
+              >
                 <Camera className="w-32 h-32 text-primary/70" />
               </div>
             </div>
@@ -123,16 +216,26 @@ const HowItWorks = () => {
         </section>
         
         {/* Step 4 */}
-        <section className="py-16 md:py-24 bg-secondary/30">
+        <section ref={step4Ref} className="py-16 md:py-24 bg-secondary/30">
           <div className="container max-w-6xl mx-auto px-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-              <div className="order-last md:order-first bg-white p-8 rounded-2xl flex items-center justify-center shadow-md">
+              <div 
+                className={`order-last md:order-first bg-white p-8 rounded-2xl flex items-center justify-center shadow-md transition-all duration-1000 hover:shadow-xl ${
+                  step4InView ? 'opacity-100 translate-x-0 scale-100' : 'opacity-0 -translate-x-8 scale-95'
+                }`}
+                style={{ transitionDelay: '0.3s' }}
+              >
                 <div className="relative">
                   <Lock className="w-24 h-24 text-primary/70" />
                   <LockOpen className="w-24 h-24 text-primary/70 absolute top-0 left-12" />
                 </div>
               </div>
-              <div>
+              <div 
+                className={`transition-all duration-1000 ${
+                  step4InView ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'
+                }`}
+                style={{ transitionDelay: '0.2s' }}
+              >
                 <div className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-sm mb-4">
                   Step 4
                 </div>
@@ -147,7 +250,13 @@ const HowItWorks = () => {
                     'In private mode, guests only see their own uploads',
                     'Toggle between modes at any time',
                   ].map((item, index) => (
-                    <li key={index} className="flex items-start">
+                    <li 
+                      key={index} 
+                      className={`flex items-start transition-all duration-1000 ${
+                        step4InView ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'
+                      }`}
+                      style={{ transitionDelay: `${0.4 + index * 0.1}s` }}
+                    >
                       <FaCheck className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
                       {item}
                     </li>
@@ -159,15 +268,25 @@ const HowItWorks = () => {
         </section>
         
         {/* FAQ Section */}
-        <section className="py-16 md:py-24">
+        <section ref={faqRef} className="py-16 md:py-24">
           <div className="container max-w-6xl mx-auto px-6">
-            <div className="text-center mb-16">
+            <div 
+              className={`text-center mb-16 transition-all duration-1000 ${
+                faqInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+              }`}
+            >
               <h2 className="text-3xl font-bold">Frequently Asked Questions</h2>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {faqs.map((faq, index) => (
-                <div key={index} className="bg-white p-6 rounded-xl shadow-sm">
+                <div 
+                  key={index} 
+                  className={`bg-white p-6 rounded-xl shadow-sm transition-all duration-1000 hover:shadow-lg hover:-translate-y-1 hover:bg-gray-50 ${
+                    faqInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+                  }`}
+                  style={{ transitionDelay: `${0.2 + index * 0.1}s` }}
+                >
                   <h3 className="text-lg font-semibold mb-3">{faq.question}</h3>
                   <p className="text-muted-foreground">{faq.answer}</p>
                 </div>
@@ -177,15 +296,36 @@ const HowItWorks = () => {
         </section>
         
         {/* Call to action */}
-        <section className="py-16 md:py-20 bg-primary">
+        <section ref={ctaRef} className="py-16 md:py-20 bg-primary">
           <div className="container max-w-6xl mx-auto px-6 text-center">
-            <h2 className="text-3xl font-bold mb-4 text-white">Ready to start collecting memories?</h2>
-            <p className="text-primary-foreground/80 mb-8 max-w-2xl mx-auto">
-              Create your memory space in minutes and start collecting photos and videos from your special event.
-            </p>
-            <Button size="lg" variant="secondary" asChild>
-              <Link to="/pricing">Create Your Memory Space</Link>
-            </Button>
+            <div 
+              className={`mb-6 transition-all duration-1000 ${
+                ctaInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+              }`}
+              style={{ transitionDelay: '0.2s' }}
+            >
+              <h2 className="text-3xl font-bold mb-4 text-white">Ready to start collecting memories?</h2>
+            </div>
+            <div 
+              className={`mb-8 transition-all duration-1000 ${
+                ctaInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+              }`}
+              style={{ transitionDelay: '0.3s' }}
+            >
+              <p className="text-primary-foreground/80 max-w-2xl mx-auto">
+                Create your memory space in minutes and start collecting photos and videos from your special event.
+              </p>
+            </div>
+            <div 
+              className={`transition-all duration-1000 ${
+                ctaInView ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-4 scale-95'
+              }`}
+              style={{ transitionDelay: '0.4s' }}
+            >
+              <Button size="lg" variant="secondary" asChild>
+                <Link to="/pricing">Create Your Memory Space</Link>
+              </Button>
+            </div>
           </div>
         </section>
       </main>

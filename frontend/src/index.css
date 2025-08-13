@@ -140,6 +140,40 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Mobile-specific header improvements */
+@media (max-width: 768px) {
+  header {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  header .container {
+    gap: 1rem;
+  }
+  
+  /* Ensure minimum spacing between logo and buttons on mobile */
+  header .container > *:first-child {
+    margin-right: auto;
+  }
+  
+  header .container > *:last-child {
+    margin-left: auto;
+  }
+  
+  /* Ensure buttons don't get too cramped on very small screens */
+  @media (max-width: 480px) {
+    header .container {
+      gap: 0.75rem;
+    }
+    
+    /* Reduce button padding on very small screens */
+    header button {
+      padding-left: 0.75rem;
+      padding-right: 0.75rem;
+    }
+  }
+}
+
 /* Hero section animations */
 @keyframes slide-up {
   0% {

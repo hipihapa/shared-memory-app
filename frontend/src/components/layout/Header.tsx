@@ -8,6 +8,7 @@ import { signOut } from 'firebase/auth';
 import { toast } from 'sonner';
 import { useLocation } from 'react-router-dom';
 import { Settings } from "lucide-react";
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface HeaderProps {
   userName?: string;
@@ -20,6 +21,7 @@ const Header: React.FC<HeaderProps> = ({ userName = '', onSettingsClick, spaceId
   const { currentUser, isVerifying } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   // Hide nav on login or register pages
   const hideNav = location.pathname === `/upload/${spaceId}` || location.pathname === `/dashboard/${spaceId}`;
@@ -47,15 +49,15 @@ const Header: React.FC<HeaderProps> = ({ userName = '', onSettingsClick, spaceId
 
   return (
     <header className="w-full py-4 px-6 bg-white/30 backdrop-blur-md shadow-sm sticky top-0 z-10">
-      <div className="container max-w-6xl mx-auto flex justify-between items-center">
+      <div className="container max-w-6xl mx-auto flex justify-between items-center gap-6">
         {currentUser && !isVerifying ? (
-          <span className="flex items-center cursor-default select-none">
+          <span className="flex items-center cursor-default select-none flex-shrink-0">
             <span className="text-2xl font-bold bg-clip-text text-transparent bg-purple-gradient">
               MemoryShare
             </span>
           </span>
         ) : (
-          <Link to="/" className="flex items-center">
+          <Link to="/" className="flex items-center flex-shrink-0">
             <span className="text-2xl font-bold bg-clip-text text-transparent bg-purple-gradient">
               MemoryShare
             </span>
@@ -63,7 +65,7 @@ const Header: React.FC<HeaderProps> = ({ userName = '', onSettingsClick, spaceId
         )}
 
         {!hideNav && (
-          <nav className="hidden md:flex items-center space-x-6">
+          <nav className="hidden md:flex items-center space-x-6 flex-shrink-0">
             <Link to="/how-it-works" className="text-foreground hover:text-primary transition-colors">
               How It Works
             </Link>
@@ -73,7 +75,7 @@ const Header: React.FC<HeaderProps> = ({ userName = '', onSettingsClick, spaceId
           </nav>
         )}
 
-        <div className="flex items-center space-x-4">
+        <div className={`flex items-center ${isMobile ? 'space-x-2' : 'space-x-4'} flex-shrink-0`}>
           {/* Authenticated user - only show when not verifying */}
           {currentUser && !isVerifying && (
             <div className="flex items-center space-x-3">
@@ -107,7 +109,7 @@ const Header: React.FC<HeaderProps> = ({ userName = '', onSettingsClick, spaceId
               {isDashboardPage && null}
               {/* On other pages: show login/get started */}
               {!isUploadPage && !isDashboardPage && (
-                <div className="flex items-center space-x-3">
+                <div className={`flex items-center ${isMobile ? 'space-x-2' : 'space-x-3'}`}>
                   <Button variant="outline" size="sm" className='rounded-[10px]' asChild>
                     <Link to="/login">Login</Link>
                   </Button>

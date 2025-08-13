@@ -6,9 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { Camera, Upload as UploadIcon } from 'lucide-react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import { uploadMedia } from '@/services/api';
+import { getUserSpaceId, getSpaceById, getMediaBySpace } from '@/services/api';
 
 import { CiLock } from "react-icons/ci";
 import { CiUnlock } from "react-icons/ci";
@@ -20,6 +21,7 @@ import { addFiles, removeFile, clearFiles } from "@/store/slices/uploadFileSlice
 
 const Upload = () => {
   const { spaceId } = useParams<{ spaceId: string }>();
+  const navigate = useNavigate();
   const [isUploading, setIsUploading] = useState(false);
   const [guestName, setGuestName] = useState('');
   const [activeTab, setActiveTab] = useState<string>('upload');
@@ -28,14 +30,40 @@ const Upload = () => {
   const [isDragActive, setIsDragActive] = useState(false);
   const { currentUser } = useAuth();
 
+  // Check if user has access to this space (only for authenticated users)
+  useEffect(() => {
+    const checkUserAccess = async () => {
+      if (!currentUser || !spaceId) return;
+      
+      try {
+        // Try to get the user's space ID to verify access
+        const userSpaceId = await getUserSpaceId(currentUser.uid);
+        // If the user's space ID doesn't match the current spaceId, redirect
+        if (userSpaceId !== spaceId) {
+          toast.error("You don't have access to this space. Redirecting to your space...");
+          setTimeout(() => {
+            navigate(`/upload/${userSpaceId}`);
+          }, 2000);
+        }
+      } catch (error) {
+        console.error("Error checking user access:", error);
+        // User doesn't have a space, redirect to registration
+        toast.error("You haven't created a space yet. Please complete your registration first.");
+        setTimeout(() => {
+          navigate('/register');
+        }, 2000);
+      }
+    };
+
+    checkUserAccess();
+  }, [currentUser, spaceId, navigate]);
+
   useEffect(() => {
     const fetchEventDetails = async () => {
       if (!spaceId) return;
       setLoadingEvent(true);
       try {
-        const res = await fetch(`/api/spaces/id/${spaceId}`);
-        if (!res.ok) throw new Error('Failed to fetch event details');
-        const data = await res.json();
+        const data = await getSpaceById(spaceId);
         setEventDetails({
           name: `${data.urlSlug}`,
           date: new Date(data.eventDate).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }),
@@ -64,9 +92,7 @@ const Upload = () => {
       setQuotaLoading(true);
       try {
         // Fetch space details to get plan
-        const res = await fetch(`/api/spaces/id/${spaceId}`);
-        if (!res.ok) throw new Error('Failed to fetch space details');
-        const data = await res.json();
+        const data = await getSpaceById(spaceId);
         const plan = data.plan || 'basic';
         let max = 10;
         if (plan === 'premium') max = 500;
@@ -74,9 +100,7 @@ const Upload = () => {
         setMaxAllowed(max);
 
         // Fetch current media count
-        const mediaRes = await fetch(`/api/spaces/${spaceId}/media`);
-        if (!mediaRes.ok) throw new Error('Failed to fetch media');
-        const mediaData = await mediaRes.json();
+        const mediaData = await getMediaBySpace(spaceId);
         setMediaCount(mediaData.length || 0);
       } catch (err) {
         setMediaCount(0);
@@ -173,9 +197,9 @@ const Upload = () => {
 
     <Header spaceId={spaceId} isPublic={eventDetails && !eventDetails.mode} />
       
-    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white p-4 sm:p-8">
+    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white p-2 sm:p-4">
       <div className="max-w-lg mx-auto">
-        <div className="text-center mb-10">
+        <div className="text-center mb-4">
           {loadingEvent ? (
             <>
             <div className="animate-pulse h-8 w-1/2 mx-auto bg-gray-200 rounded-lg mb-2" />
@@ -207,7 +231,7 @@ const Upload = () => {
         </div>
         
         <Card className="border-none shadow-lg">
-          <CardContent className="p-6">
+          <CardContent className="px-6 py-2">
             <div className="text-center mb-6">
               <h2 className="text-xl font-semibold">Share Your Memories</h2>
               <p className="text-muted-foreground text-sm mt-1">
@@ -217,7 +241,7 @@ const Upload = () => {
             
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Your Name(Optianal)</Label>
+                <Label htmlFor="name">Your Name(Optional)</Label>
                 <Input 
                   id="name"
                   value={guestName}

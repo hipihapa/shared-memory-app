@@ -205,7 +205,7 @@ const plans = [
   {
     name: "Premium",
     description: "Best for weddings & large events",
-    price: "20",
+    price: "10",
     period: "one-time",
     features: [
       "500 media storage (1GB)",
@@ -222,7 +222,7 @@ const plans = [
   {
     name: "Forever",
     description: "Permanent memory preservation",
-    price: "50",
+    price: "30",
     period: "one-time",
     features: [
       "3000 media storage (5GB)",

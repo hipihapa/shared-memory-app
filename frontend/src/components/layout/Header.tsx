@@ -17,15 +17,15 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ userName = '', onSettingsClick, spaceId, isPublic }) => {
-  const { currentUser } = useAuth();
+  const { currentUser, isVerifying } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
   // Hide nav on login or register pages
   const hideNav = location.pathname === `/upload/${spaceId}` || location.pathname === `/dashboard/${spaceId}`;
 
-  // Determine if guest (not logged in)
-  const isGuest = !currentUser;
+  // Determine if guest (not logged in or still verifying)
+  const isGuest = !currentUser || isVerifying;
 
   // Determine if on upload or dashboard page
   const isUploadPage = location.pathname === `/upload/${spaceId}`;
@@ -48,7 +48,7 @@ const Header: React.FC<HeaderProps> = ({ userName = '', onSettingsClick, spaceId
   return (
     <header className="w-full py-4 px-6 bg-white/30 backdrop-blur-md shadow-sm sticky top-0 z-10">
       <div className="container max-w-6xl mx-auto flex justify-between items-center">
-        {currentUser ? (
+        {currentUser && !isVerifying ? (
           <span className="flex items-center cursor-default select-none">
             <span className="text-2xl font-bold bg-clip-text text-transparent bg-purple-gradient">
               MemoryShare
@@ -74,16 +74,16 @@ const Header: React.FC<HeaderProps> = ({ userName = '', onSettingsClick, spaceId
         )}
 
         <div className="flex items-center space-x-4">
-          {/* Authenticated user */}
-          {currentUser && (
+          {/* Authenticated user - only show when not verifying */}
+          {currentUser && !isVerifying && (
             <div className="flex items-center space-x-3">
               <span className="text-sm text-muted-foreground hidden md:inline-block">
                 Hello, {currentUser.displayName || userName || 'User'}
               </span>
               {/* Only show Dashboard button if not already on dashboard */}
               {location.pathname !== `/dashboard/${spaceId}` && spaceId && (
-                <Button variant="outline" size="sm" asChild>
-                  <Link to={`/dashboard/${spaceId}`}>Dashboard</Link>
+                <Button variant="outline" size="sm" className='rounded-[10px]' asChild>
+                  <Link to={`/dashboard/${spaceId}`}>Gallery</Link>
                 </Button>
               )}
               <Button variant="ghost" size="sm" onClick={handleSignOut}>
@@ -92,8 +92,8 @@ const Header: React.FC<HeaderProps> = ({ userName = '', onSettingsClick, spaceId
             </div>
           )}
 
-          {/* Guest logic */}
-          {!currentUser && (
+          {/* Guest logic - show when not logged in OR when verifying */}
+          {isGuest && (
             <>
               {/* On upload page: show nothing for private, only dashboard for public */}
               {isUploadPage && spaceId && (

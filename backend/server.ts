@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import spaceRoutes from './routes/routes';
+import userRoutes from './routes/userRoutes';
 
 // Initialize Express app
 const app = express();
@@ -16,6 +17,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api/spaces', spaceRoutes);
+app.use('/api/user', userRoutes);
 
 // Start the server
 app.listen(PORT, () => {

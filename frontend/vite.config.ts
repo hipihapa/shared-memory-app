@@ -8,14 +8,14 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "0.0.0.0",
     port: 8080,
-    proxy: mode === 'development'
-      ? {
-          '/api': 'http://localhost:5000'
-        }
-      : undefined,
-      // allowedHosts: [
-      //   "35df-154-160-26-213.ngrok-free.app"
-      // ]
+    // proxy: mode === 'development'
+    //   ? {
+    //       '/api': 'http://localhost:5000'
+    //     }
+    //   : undefined,
+    //   allowedHosts: [
+    //     "35df-154-160-26-213.ngrok-free.app"
+    //   ]
   },
   plugins: [
     react(),

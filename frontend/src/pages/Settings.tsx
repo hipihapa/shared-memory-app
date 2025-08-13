@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/sheet";
 import { CircleAlert, Lock, Unlock } from "lucide-react";
 import React, { useState, useEffect } from "react";
-import { updateSpaceMode } from "@/services/api";
+import { updateSpaceMode, getSpaceById } from "@/services/api";
 import { useParams } from "react-router-dom";
 
 const Settings = ({ onClose }) => {
@@ -24,20 +24,23 @@ const Settings = ({ onClose }) => {
   const [publicMode, setPublicMode] = useState(false);
   const [privateMode, setPrivateMode] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [originalPublicMode, setOriginalPublicMode] = useState(false);
 
   // Load current mode from the backend
   const fetchMode = async () => {
     if (!spaceId) return;
     setLoading(true);
-    const res = await fetch(`/api/spaces/id/${spaceId}`);
-    if (!res.ok) {
+    try {
+      const data = await getSpaceById(spaceId);
+      const isPublic = !!data.isPublic;
+      setPublicMode(isPublic);
+      setPrivateMode(!isPublic);
+      setOriginalPublicMode(isPublic);
+    } catch (error) {
+      console.error("Error fetching mode:", error);
+    } finally {
       setLoading(false);
-      return;
     }
-    const data = await res.json();
-    setPublicMode(!!data.isPublic);
-    setPrivateMode(!data.isPublic);
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -49,11 +52,17 @@ const Settings = ({ onClose }) => {
   const handleSave = async () => {
     if (!spaceId) return;
     try {
-      await updateSpaceMode(spaceId, publicMode);
+      setLoading(true);
+      console.log("Saving mode:", { spaceId, publicMode });
+      const result = await updateSpaceMode(spaceId, publicMode);
+      console.log("Mode update result:", result);
       await fetchMode(); // Refresh state after save
       onClose();
     } catch (error) {
-      alert("Failed to update mode");
+      console.error("Failed to update mode:", error);
+      alert("Failed to update mode. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -139,8 +148,8 @@ const Settings = ({ onClose }) => {
             className="bg-white text-black hover:bg-accent"
             disabled={loading}
             onClick={() => {
-              setPublicMode(false);
-              setPrivateMode(false);
+              setPublicMode(originalPublicMode);
+              setPrivateMode(!originalPublicMode);
             }}
           >
             Cancel changes

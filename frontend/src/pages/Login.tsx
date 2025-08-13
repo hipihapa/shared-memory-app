@@ -11,16 +11,20 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { auth, googleProvider } from '@/lib/firebase';
 import { signInWithPopup, signInWithEmailAndPassword, signInWithEmailLink } from 'firebase/auth';
-import { getUserSpaceId } from '@/services/api';
+import { getUserSpaceId, checkUserExists } from '@/services/api';
 import { IoLogoGoogle } from 'react-icons/io5';
+import { useAuth } from '@/contexts/AuthContext';
+import { Eye, EyeOff } from 'lucide-react';
 
 const Login = () => {
   const navigate = useNavigate();
+  const { setVerifying } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -30,12 +34,28 @@ const Login = () => {
   const handleGoogleSignIn = async () => {
     try {
       setIsLoading(true);
-      await signInWithPopup(auth, googleProvider);
-      toast.success("Login successful! Redirecting to your dashboard...");
-      const user = auth.currentUser;
-      if (!user) {
-        throw new Error("No user found after Google sign-in");
+      setVerifying(true); // Start verification process
+      
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+      
+      // Check if user exists in our database
+      const userExists = await checkUserExists(user.uid);
+      
+      if (!userExists.exists) {
+        toast.error("Account not found. Please sign up first.");
+        // Sign out the user since they don't exist in our system
+        await auth.signOut();
+        // Redirect to registration page
+        setTimeout(() => {
+          navigate('/register');
+        }, 2000);
+        return;
       }
+      
+      toast.success("Google authentication successful! Redirecting to your gallery...");
+      
+      // Get user's space and redirect to dashboard
       const spaceId = await getUserSpaceId(user.uid);
       setTimeout(() => {
         navigate(`/dashboard/${spaceId}`);
@@ -45,6 +65,7 @@ const Login = () => {
       toast.error("Google sign-in failed. Please try again.");
     } finally {
       setIsLoading(false);
+      setVerifying(false); // End verification process
     }
   };
 
@@ -59,12 +80,27 @@ const Login = () => {
     
     try {
       setIsLoading(true);
-      await signInWithEmailAndPassword(auth, formData.email, formData.password);
-      toast.success("Login successful! Redirecting to your dashboard...");
-      const user = auth.currentUser;
-      if (!user) {
-        throw new Error("No user found after login");
+      setVerifying(true); // Start verification process
+      
+      const result = await signInWithEmailAndPassword(auth, formData.email, formData.password);
+      const user = result.user;
+      
+      // Check if user exists in our database
+      const userExists = await checkUserExists(user.uid);
+      
+      if (!userExists.exists) {
+        toast.error("Account not found. Please sign up first.");
+        // Sign out the user since they don't exist in our system
+        await auth.signOut();
+        // Redirect to registration page
+        setTimeout(() => {
+          navigate('/register');
+        }, 2000);
+        return;
       }
+      
+      toast.success("Login successful! Redirecting to your dashboard...");
+      
       const spaceId = await getUserSpaceId(user.uid);
       setTimeout(() => {
         navigate(`/dashboard/${spaceId}`);
@@ -72,9 +108,24 @@ const Login = () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error("Login error:", error);
-      toast.error(error.message || "Login failed. Please check your credentials.");
+      
+      // Handle specific Firebase auth errors
+      if (error.code === 'auth/user-not-found') {
+        toast.error("Account not found. Please sign up first.");
+        // Redirect to registration page
+        setTimeout(() => {
+          navigate('/register');
+        }, 3000);
+      } else if (error.code === 'auth/wrong-password') {
+        toast.error("Incorrect password. Please try again.");
+      } else if (error.code === 'auth/invalid-email') {
+        toast.error("Invalid email address.");
+      } else {
+        toast.error(error.message || "Login failed. Please check your credentials.");
+      }
     } finally {
       setIsLoading(false);
+      setVerifying(false); // End verification process
     }
   };
 
@@ -89,7 +140,7 @@ const Login = () => {
             <CardHeader>
               <CardTitle>Welcome Back</CardTitle>
               <CardDescription>
-                Log in to access your memory space
+                Log in to access your memory space. If you haven't signed up yet, please create an account first.
               </CardDescription>
             </CardHeader>
             
@@ -114,18 +165,27 @@ const Login = () => {
                       Forgot password?
                     </Link>
                   </div>
-                  <Input 
-                    id="password"
-                    name="password"
-                    type="password"
-                    placeholder="Enter your password"
-                    value={formData.password}
-                    onChange={handleChange}
-                  />
+                  <div className="relative">
+                    <Input 
+                      id="password"
+                      name="password"
+                      placeholder="Enter your password"
+                      type={showPassword ? "text" : "password"}
+                      value={formData.password}
+                      onChange={handleChange}
+                    />
+                    <button
+                      type="button"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+                    </button>
+                  </div>
                 </div>
                 
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? 'Signing in...' : 'Sign In'}
+                  {isLoading ? 'Logging in...' : 'Log In'}
                 </Button>
                 
                 <div className="flex items-center my-4">
@@ -144,6 +204,12 @@ const Login = () => {
                   <IoLogoGoogle className="w-6 h-6 mr-1" />
                   {isLoading ? 'Loading...' : 'Continue with Google'}
                 </Button>
+                
+                {/* <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-800 text-center">
+                    <strong>New to Memory Share?</strong> You need to create an account first before you can log in.
+                  </p>
+                </div> */}
               </form>
             </CardContent>
             

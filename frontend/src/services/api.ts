@@ -78,9 +78,21 @@ export async function getUserSpaceId(uid: string): Promise<string> {
   }
 }
 
+// Fetch space by ID
+export async function getSpaceById(spaceId: string) {
+  try {
+    const response = await api.get(`/spaces/id/${spaceId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching space:", error);
+    throw error?.response?.data || error;
+  }
+}
+
 export const updateSpaceMode = async (spaceId, isPublic) => {
   try {
-    const response = await api.patch(`/spaces/${spaceId}/mode`, { isPublic })
+    const response = await api.patch(`/spaces/${spaceId}/mode`, { isPublic });
+    return response.data;
   } catch (error) {
     throw error?.response?.data || error;
   }
@@ -96,5 +108,43 @@ export const initializePaystackPayment = async (paymentData) => {
   }
 };
 
+// Check if user exists in database
+export async function checkUserExists(uid: string): Promise<{ exists: boolean; user?: any; message?: string }> {
+  try {
+    const response = await api.get(`/user/${uid}/exists`);
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      return { exists: false, message: error.response.data.message };
+    }
+    console.error("Error checking user existence:", error);
+    throw new Error("Failed to check user existence");
+  }
+}
+
+// Create a new user
+export async function createUser(userData: { uid: string; email: string; displayName?: string }): Promise<any> {
+  try {
+    const response = await api.post('/user', userData);
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.status === 400) {
+      throw new Error(error.response.data.message);
+    }
+    console.error("Error creating user:", error);
+    throw new Error("Failed to create user");
+  }
+}
+
+// Check if URL slug is available
+export async function checkUrlSlugAvailability(urlSlug: string): Promise<{ available: boolean; message: string; suggestedSlug?: string }> {
+  try {
+    const response = await api.get(`/spaces/check-slug/${urlSlug}`);
+    return response.data;
+  } catch (error: any) {
+    console.error("Error checking URL slug availability:", error);
+    throw new Error("Failed to check URL slug availability");
+  }
+}
 
 export default api;

@@ -7,7 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { ArrowDownToLine, CircleArrowLeft, GripVertical, HandHeart, Trash2, Upload as UploadIcon } from "lucide-react";
+import { ArrowDownToLine, CircleArrowLeft, GripVertical, HandHeart, Images, Trash2, Upload as UploadIcon } from "lucide-react";
 import { RxOpenInNewWindow } from "react-icons/rx";
 import { useNavigate } from "react-router-dom";
 import SettingsSheet from "./Settings";
@@ -19,6 +19,7 @@ import { QRCodeCanvas } from "qrcode.react";
 import { getMediaBySpace, deleteMedia } from "@/services/api";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { getUserSpaceId, getSpaceById } from "@/services/api";
 
 
 export default function Dashboard() {
@@ -37,18 +38,46 @@ export default function Dashboard() {
   const [loadingEvent, setLoadingEvent] = useState(true);
   const { currentUser } = useAuth();
 
+  // Check if user has access to this space
+  useEffect(() => {
+    const checkUserAccess = async () => {
+      if (!currentUser || !spaceId) return;
+      
+      try {
+        // Try to get the user's space ID to verify access
+        const userSpaceId = await getUserSpaceId(currentUser.uid);
+        // If the user's space ID doesn't match the current spaceId, redirect
+        if (userSpaceId !== spaceId) {
+          toast.error("You don't have access to this space. Redirecting to your space...");
+          setTimeout(() => {
+            navigate(`/dashboard/${userSpaceId}`);
+          }, 2000);
+        }
+      } catch (error) {
+        console.error("Error checking user access:", error);
+        // User doesn't have a space, redirect to registration
+        toast.error("You haven't created a space yet. Please complete your registration first.");
+        setTimeout(() => {
+          navigate('/register');
+        }, 2000);
+      }
+    };
+
+    checkUserAccess();
+  }, [currentUser, spaceId, navigate]);
+
   useEffect(() => {
     const fetchEventDetails = async () => {
       if (!spaceId) return;
       setLoadingEvent(true);
       try {
-        const res = await fetch(`/api/spaces/id/${spaceId}`);
-        if (!res.ok) throw new Error('Failed to fetch event details');
-        const data = await res.json();
+        const data = await getSpaceById(spaceId);
+        console.log("Fetched event details:", data);
         setEventDetails({
           isPublic: !!data.isPublic,
         });
       } catch (err) {
+        console.error("Error fetching event details:", err);
         setEventDetails({
           isPublic: false,
         });
@@ -292,16 +321,57 @@ export default function Dashboard() {
             </div>
           ) : mediaList.length === 0 ? (
             <div className="flex justify-center items-center min-h-[40vh]">
-              <Button
-                size="lg"
-                className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl shadow-lg"
-                onClick={handleUploadClick}
-              >
-                <div className="flex items-center justify-center gap-2">
-                  <UploadIcon className="w-12 h-12" />
-                  <span className="text-sm">Upload Media</span>
+              <div className="max-w-2xl mx-auto text-center space-y-6">
+                <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-8 rounded-2xl shadow-lg border border-purple-100">
+                  <div className="flex flex-col items-center space-y-4">
+                    <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                      <UploadIcon className="w-4 h-4 text-purple-600" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-800">No Media Yet</h3>
+                    <p className="text-gray-600 max-w-md text-sm">
+                      Your gallery is ready to be filled with memories! To add media, you'll need to go back to the upload page.
+                    </p>
+                    <Button
+                      size="sm"
+                      className="flex items-center rounded-[8px] gap-2 px-6 py-3 bg-purple-500 hover:bg-purple-500 text-white text-sm rounded-xl shadow-lg transition-all duration-200"
+                      onClick={handleUploadClick}
+                    >
+                      <Images className="w-5 h-5" />
+                      Go to Upload Page
+                    </Button>
+                  </div>
                 </div>
-              </Button>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+                    <div className="flex items-start space-x-3">
+                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-blue-600 font-semibold text-sm">1</span>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-gray-800 mb-2">Navigate Back</h4>
+                        <p className="text-sm text-gray-600">
+                          Use the back arrow in the top-left corner to return to the upload page.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+                    <div className="flex items-start space-x-3">
+                      <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-green-600 font-semibold text-sm">2</span>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-gray-800 mb-2">Upload Media</h4>
+                        <p className="text-sm text-gray-600">
+                          Select and upload your photos and videos to start building your memory collection.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           ) 
           : (
@@ -376,7 +446,21 @@ export default function Dashboard() {
 
       {showSettings && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <SettingsSheet onClose={() => setShowSettings(false)} />
+          <SettingsSheet 
+            onClose={() => {
+              setShowSettings(false);
+              // Refresh event details to get updated mode
+              if (spaceId) {
+                getSpaceById(spaceId).then(data => {
+                  setEventDetails({
+                    isPublic: !!data.isPublic,
+                  });
+                }).catch(err => {
+                  console.error("Error refreshing event details:", err);
+                });
+              }
+            }} 
+          />
         </div>
       )}
       {previewImg && (

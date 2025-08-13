@@ -15,8 +15,8 @@ import { initializePaystackPayment } from '@/services/api';
 
 const planPrices = {
   basic: 0,
-  premium: 20,
-  forever: 50,
+  premium: 10,
+  forever: 30,
 };
 
 const Payment = () => {

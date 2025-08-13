@@ -15,6 +15,7 @@ import NotFound from "../pages/NotFound";
 import Dashboard from "../pages/Dashboard";
 import Settings from "../pages/Settings";
 import ProtectedRoute from './ProtectedRoutes';
+import PublicOnlyRoutes from './PublicOnlyRoutes';
 import ResetPassword from '@/pages/ResetPassword';
 import Payment from '@/pages/Payment';
 import ScrollToTop from '@/components/ScrollToTop';
@@ -31,20 +32,21 @@ const App = () => (
         <ScrollToTop/>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/forgot-password" element={<ResetPassword />} />
-            <Route path="/payment" element={<Payment />} />
-
-            <Route path="/upload/:spaceId" element={<Upload />} />
-            <Route path="/dashboard/:spaceId" element={<Dashboard />} />
-
+            <Route element={<PublicOnlyRoutes />}>
+              <Route path="/register" element={<Register />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/forgot-password" element={<ResetPassword />} />
+              <Route path="/how-it-works" element={<HowItWorks />} />
+              <Route path="/pricing" element={<Pricing />} />
+            </Route>
             <Route element={<ProtectedRoute children={''}/>}>
-            <Route path="dashboard/settings/:spaceId/" element={<Settings onClose={undefined} />} />
+              <Route path="/payment" element={<Payment />} />
+              <Route path="/upload/:spaceId" element={<Upload />} />
+              <Route path="/dashboard/:spaceId" element={<Dashboard />} />
+              <Route path="dashboard/settings/:spaceId/" element={<Settings onClose={undefined} />} />
             </Route>
 
-            <Route path="/how-it-works" element={<HowItWorks />} />
-            <Route path="/pricing" element={<Pricing />} />
+
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

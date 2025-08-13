@@ -11,7 +11,8 @@ import {
   deleteMedia,
   initializePayment,
   paystackWebhook,
-  verifyPayment
+  verifyPayment,
+  checkUrlSlugAvailability
 } from "../controllers/controllers";
 
 const router = express.Router();
@@ -26,6 +27,7 @@ router.get("/user/:userId/spaceId", getUserSpaceId);
 router.get("/:urlSlug", getSpaceBySlug);
 router.get("/id/:spaceId", getSpaceById);
 router.patch("/:spaceId/mode", updateSpaceMode);
+router.get("/check-slug/:urlSlug", checkUrlSlugAvailability);
 
 // Media routes
 router.post("/:spaceId/media", upload.single("file"), uploadMedia);

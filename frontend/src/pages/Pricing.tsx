@@ -119,14 +119,14 @@ const Pricing = () => {
             
             <div ref={coreFeaturesRef} className="mt-16 text-center">
               <p 
-                className={`text-muted-foreground mb-3 transition-all duration-1000 ${
+                className={`text-muted-foreground mb-6 transition-all duration-1000 ${
                   coreFeaturesInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
                 }`}
                 style={{ transitionDelay: '0.2s' }}
               >
                 All plans include our core features:
               </p>
-              <div className="flex flex-wrap justify-center gap-x-8 gap-y-2">
+              <div className="grid grid-cols-2 gap-4 max-w-2xl mx-auto">
                 {[
                   "Free Guest Uploads", 
                   "QR Code Generation",
@@ -135,12 +135,12 @@ const Pricing = () => {
                 ].map((feature, index) => (
                   <div 
                     key={index} 
-                    className={`flex items-center transition-all duration-1000 ${
+                    className={`flex items-center justify-center sm:justify-start transition-all duration-1000 ${
                       coreFeaturesInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
                     }`}
                     style={{ transitionDelay: `${0.4 + index * 0.1}s` }}
                   >
-                    <Check className="h-4 w-4 text-primary mr-2" />
+                    <Check className="h-4 w-4 text-primary mr-2 flex-shrink-0" />
                     <span className="text-sm">{feature}</span>
                   </div>
                 ))}

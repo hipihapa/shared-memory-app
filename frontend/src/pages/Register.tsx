@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
+// import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -12,15 +12,18 @@ import { auth, googleProvider } from '@/lib/firebase';
 import { signInWithPopup, createUserWithEmailAndPassword } from 'firebase/auth';
 import { createSpace, createUser, checkUrlSlugAvailability, getUserSpaceId } from '@/services/api';
 import { useLocation } from 'react-router-dom';
-import { Eye, EyeOff } from 'lucide-react';
 
-import { IoLogoGoogle } from "react-icons/io";
+
+// import { IoLogoGoogle } from "react-icons/io";
+import { validateEmail } from '@/lib/utils';
+import { EmailInput } from '@/components/ui/email-input';
+import { PasswordInput } from '@/components/ui/password-input';
 
 const Register = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [step, setStep] = useState<number>(1);
-  const [showPassword, setShowPassword] = useState(false);
+
   const [slugStatus, setSlugStatus] = useState<{ available: boolean; message: string; suggestedSlug?: string } | null>(null);
   const [emailStatus, setEmailStatus] = useState<{ available: boolean; message: string } | null>(null);
   const [isCheckingSlug, setIsCheckingSlug] = useState(false);
@@ -89,10 +92,13 @@ const Register = () => {
 
   // Check if email is available (not used by another account)
   const checkEmailAvailability = async (email: string) => {
-    if (!email.trim() || !email.includes('@')) {
+    if (!email.trim()) {
       setEmailStatus(null);
       return;
     }
+    
+    // Use the new email validation function
+    const emailValidation = validateEmail(email);
     
     // Don't check if it's the same as the Google account email
     if (auth.currentUser && auth.currentUser.providerData[0]?.providerId === 'google.com' && email === auth.currentUser.email) {
@@ -102,12 +108,11 @@ const Register = () => {
     
     setIsCheckingEmail(true);
     try {
-      // For step-by-step validation, we only check email format, not database conflicts
-      // Database conflicts will be checked during final submission
-      if (email.includes('@') && email.includes('.')) {
+      // Use the validation result
+      if (emailValidation.isValid) {
         setEmailStatus({ available: true, message: "Email format is valid" });
       } else {
-        setEmailStatus({ available: false, message: "Please enter a valid email address" });
+        setEmailStatus({ available: false, message: emailValidation.message });
       }
     } catch (error) {
       console.error("Error checking email availability:", error);
@@ -133,9 +138,10 @@ const Register = () => {
         return;
       }
       
-      // Only validate email format, not database conflicts
-      if (!formData.email.includes('@') || !formData.email.includes('.')) {
-        toast.error("Please provide a valid email address");
+      // Use the new email validation function
+      const emailValidation = validateEmail(formData.email);
+      if (!emailValidation.isValid) {
+        toast.error(emailValidation.message);
         return;
       }
       
@@ -185,35 +191,35 @@ const Register = () => {
     setStep((prev) => prev - 1);
   };
 
-  const handleGoogleSignIn = async () => {
-    try {
-      setIsLoading(true);
-      const result = await signInWithPopup(auth, googleProvider);
-      const user = result.user;
-      
-      // Extract name from Google account
-      const displayName = user.displayName || '';
-      const nameParts = displayName.split(' ');
-      const firstName = nameParts[0] || '';
-      const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
-      
-      // Set the form data with Google account info, including email
-      setFormData(prev => ({
-        ...prev,
-        firstName,
-        lastName,
-        email: user.email || '', // Pre-fill email but allow editing
-      }));
-      
-      // Don't skip step 2 - let user review and edit all info including email
-      toast.success("Google account connected! Email pre-filled but you can edit it.");
-    } catch (error) {
-      console.error("Google sign-in error:", error);
-      toast.error("Google sign-in failed. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // const handleGoogleSignIn = async () => {
+  //   try {
+  //     setIsLoading(true);
+  //     const result = await signInWithPopup(auth, googleProvider);
+  //     const user = result.user;
+  //     
+  //     // Extract name from Google account
+  //     const displayName = user.displayName || '';
+  //     const nameParts = displayName.split(' ');
+  //     const firstName = nameParts[0] || '';
+  //     const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
+  //     
+  //     // Set the form data with Google account info, including email
+  //     setFormData(prev => ({
+  //       ...prev,
+  //       firstName,
+  //       lastName,
+  //       email: user.email || '', // Pre-fill email but allow editing
+  //     }));
+  //     
+  //     // Don't skip step 2 - let user review and edit all info including email
+  //     toast.success("Google account connected! Email pre-filled but you can edit it.");
+  //   } catch (error) {
+  //     console.error("Google sign-in error:", error);
+  //     toast.error("Google sign-in failed. Please try again.");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   // Check if there are any incomplete user registrations that might conflict
   const checkForIncompleteRegistrations = async () => {
@@ -240,6 +246,13 @@ const Register = () => {
     // Final validation
     if (!formData.eventDate || !formData.urlSlug) {
       toast.error("Please fill in all required fields");
+      return;
+    }
+    
+    // Validate email format before final submission
+    const emailValidation = validateEmail(formData.email);
+    if (!emailValidation.isValid) {
+      toast.error(emailValidation.message);
       return;
     }
     
@@ -484,72 +497,59 @@ useEffect(() => {
                 
                 {step === 2 && (
                   <div className="space-y-4 animate-fade-in">
-                                          <div className="space-y-2">
-                          <Label htmlFor="email">Email Address</Label>
-                          <Input 
-                            id="email"
-                            name="email"
-                            type="email"
-                            placeholder="you@example.com"
-                            value={formData.email}
-                            onChange={handleChange}
-                            className={`${emailStatus && !emailStatus.available ? 'border-red-500' : formData.email && formData.email.includes('@') && formData.email.includes('.') ? 'border-green-500' : ''}`}
-                          />
-                          
-                          {/* Show email availability status */}
-                          {isCheckingEmail && (
-                            <p className="text-xs text-muted-foreground flex items-center">
-                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary mr-2"></div>
-                              Checking email...
-                            </p>
-                          )}
-                          
-                          {emailStatus && !isCheckingEmail && (
-                            <div className={`text-xs ${emailStatus.available ? 'text-green-600' : 'text-red-600'}`}>
-                              {emailStatus.message}
-                              {emailStatus.available && formData.email !== auth.currentUser?.email && (
-                                <div className="text-muted-foreground mt-1">
-                                  Note: Email availability will be checked during final submission
-                                </div>
-                              )}
-                            </div>
-                          )}
-                          
-                          {auth.currentUser && auth.currentUser.providerData[0]?.providerId === 'google.com' && (
-                            <p className="text-xs text-muted-foreground">
-                              Connected to Google account: {auth.currentUser.email}
-                              <br />
-                              <span className="text-blue-600">You can edit this email if you want to use a different one.</span>
-                              <br />
-                              <span className="text-orange-600">Note: If you choose a different email, make sure it's not already used by another account.</span>
-                            </p>
-                          )}
-                        </div>
+                                          <EmailInput
+                          id="email"
+                          name="email"
+                          label="Email Address"
+                          value={formData.email}
+                          onChange={handleChange}
+                          placeholder="you@example.com"
+                          required
+                          onValidationChange={(isValid) => {
+                            if (formData.email.trim() !== '') {
+                              const message = isValid ? 'Email format is valid' : 'Invalid email format';
+                              setEmailStatus({ available: isValid, message });
+                            }
+                          }}
+                        />
+                        
+                        {/* Show email availability status */}
+                        {isCheckingEmail && (
+                          <p className="text-xs text-muted-foreground flex items-center">
+                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary mr-2"></div>
+                            Checking email...
+                          </p>
+                        )}
+                        
+                        {emailStatus && !isCheckingEmail && emailStatus.available && formData.email !== auth.currentUser?.email && (
+                          <div className="text-xs text-muted-foreground">
+                            {/* Note: Email availability will be checked during final submission */}
+                          </div>
+                        )}
+                        
+                        {auth.currentUser && auth.currentUser.providerData[0]?.providerId === 'google.com' && (
+                          <p className="text-xs text-muted-foreground">
+                            Connected to Google account: {auth.currentUser.email}
+                            <br />
+                            <span className="text-blue-600">You can edit this email if you want to use a different one.</span>
+                            <br />
+                            <span className="text-orange-600">Note: If you choose a different email, make sure it's not already used by another account.</span>
+                          </p>
+                        )}
                     
                     {(!auth.currentUser || auth.currentUser.providerData[0]?.providerId !== 'google.com') && (
                       <>
-                        <div className="space-y-2">
-                          <Label htmlFor="password">Password</Label>
-                          <div className="relative">
-                            <Input 
-                              id="password"
-                              name="password"
-                              type={showPassword ? "text" : "password"}
-                              placeholder="Create a secure password"
-                              value={formData.password}
-                              onChange={handleChange}
-                            />
-                            <button
-                              type="button"
-                              className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                              onClick={() => setShowPassword(!showPassword)}
-                            >
-                              {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
-                            </button>
-                          </div>
-                        </div>
+                        <PasswordInput
+                          id="password"
+                          name="password"
+                          label="Password"
+                          value={formData.password}
+                          onChange={handleChange}
+                          placeholder="Create a secure password"
+                          required
+                        />
                         
-                        <div className="flex items-center my-4">
+                        {/* <div className="flex items-center my-4">
                           <Separator className="flex-1" />
                           <span className="px-4 text-xs text-muted-foreground">or</span>
                           <Separator className="flex-1" />
@@ -564,7 +564,7 @@ useEffect(() => {
                         >
                          <IoLogoGoogle className='w-6 h-6 mr-1' />
                           {isLoading ? 'Loading...' : 'Continue with Google'}
-                        </Button>
+                        </Button> */}
                       </>
                     )}
                     

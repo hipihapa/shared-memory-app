@@ -61,7 +61,7 @@ const HowItWorks = () => {
               className={`text-lg text-muted-foreground max-w-2xl mx-auto transition-all duration-1000 ${
                 heroInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
               }`}
-              style={{ transitionDelay: '0.4s' }}
+              style={{ transitionDelay: '0.2s' }}
             >
               A simple way to collect and share photos and videos from your special events.
             </p>
@@ -76,7 +76,7 @@ const HowItWorks = () => {
                 className={`transition-all duration-1000 ${
                   step1InView ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'
                 }`}
-                style={{ transitionDelay: '0.2s' }}
+                style={{ transitionDelay: '0.1s' }}
               >
                 <div className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-sm mb-4">
                   Step 1
@@ -97,7 +97,7 @@ const HowItWorks = () => {
                       className={`flex items-start transition-all duration-1000 ${
                         step1InView ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'
                       }`}
-                      style={{ transitionDelay: `${0.4 + index * 0.1}s` }}
+                      style={{ transitionDelay: `${0.2 + index * 0.05}s` }}
                     >
                       <FaCheck className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
                       {item}
@@ -109,7 +109,7 @@ const HowItWorks = () => {
                 className={`bg-purple-100 p-8 rounded-2xl flex items-center justify-center transition-all duration-1000 hover:shadow-xl ${
                   step1InView ? 'opacity-100 translate-x-0 scale-100' : 'opacity-0 translate-x-8 scale-95'
                 }`}
-                style={{ transitionDelay: '0.3s' }}
+                style={{ transitionDelay: '0.15s' }}
               >
                 <Share className="w-32 h-32 text-primary/70" />
               </div>
@@ -125,7 +125,7 @@ const HowItWorks = () => {
                 className={`order-last md:order-first bg-white p-8 rounded-2xl flex items-center justify-center shadow-md transition-all duration-1000 hover:shadow-xl ${
                   step2InView ? 'opacity-100 translate-x-0 scale-100' : 'opacity-0 -translate-x-8 scale-95'
                 }`}
-                style={{ transitionDelay: '0.3s' }}
+                style={{ transitionDelay: '0.15s' }}
               >
                 <QrCode className="w-32 h-32 text-primary/70" />
               </div>
@@ -154,7 +154,7 @@ const HowItWorks = () => {
                       className={`flex items-start transition-all duration-1000 ${
                         step2InView ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'
                       }`}
-                      style={{ transitionDelay: `${0.4 + index * 0.1}s` }}
+                      style={{ transitionDelay: `${0.2 + index * 0.05}s` }}
                     >
                       <FaCheck className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
                       {item}
@@ -195,7 +195,7 @@ const HowItWorks = () => {
                       className={`flex items-start transition-all duration-1000 ${
                         step3InView ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'
                       }`}
-                      style={{ transitionDelay: `${0.4 + index * 0.1}s` }}
+                      style={{ transitionDelay: `${0.2 + index * 0.05}s` }}
                     >
                       <FaCheck className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
                       {item}
@@ -207,7 +207,7 @@ const HowItWorks = () => {
                 className={`bg-purple-100 p-8 rounded-2xl flex items-center justify-center transition-all duration-1000 hover:shadow-xl ${
                   step3InView ? 'opacity-100 translate-x-0 scale-100' : 'opacity-0 translate-x-8 scale-95'
                 }`}
-                style={{ transitionDelay: '0.3s' }}
+                style={{ transitionDelay: '0.15s' }}
               >
                 <Camera className="w-32 h-32 text-primary/70" />
               </div>
@@ -223,7 +223,7 @@ const HowItWorks = () => {
                 className={`order-last md:order-first bg-white p-8 rounded-2xl flex items-center justify-center shadow-md transition-all duration-1000 hover:shadow-xl ${
                   step4InView ? 'opacity-100 translate-x-0 scale-100' : 'opacity-0 -translate-x-8 scale-95'
                 }`}
-                style={{ transitionDelay: '0.3s' }}
+                style={{ transitionDelay: '0.15s' }}
               >
                 <div className="relative">
                   <Lock className="w-24 h-24 text-primary/70" />
@@ -255,7 +255,7 @@ const HowItWorks = () => {
                       className={`flex items-start transition-all duration-1000 ${
                         step4InView ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'
                       }`}
-                      style={{ transitionDelay: `${0.4 + index * 0.1}s` }}
+                      style={{ transitionDelay: `${0.2 + index * 0.05}s` }}
                     >
                       <FaCheck className="h-5 w-5 text-primary mr-2 shrink-0 mt-0.5" />
                       {item}
@@ -285,7 +285,7 @@ const HowItWorks = () => {
                   className={`bg-white p-6 rounded-xl shadow-sm transition-all duration-1000 hover:shadow-lg hover:-translate-y-1 hover:bg-gray-50 ${
                     faqInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                   }`}
-                  style={{ transitionDelay: `${0.2 + index * 0.1}s` }}
+                  style={{ transitionDelay: `${0.1 + index * 0.05}s` }}
                 >
                   <h3 className="text-lg font-semibold mb-3">{faq.question}</h3>
                   <p className="text-muted-foreground">{faq.answer}</p>
@@ -302,7 +302,7 @@ const HowItWorks = () => {
               className={`mb-6 transition-all duration-1000 ${
                 ctaInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
               }`}
-              style={{ transitionDelay: '0.2s' }}
+              style={{ transitionDelay: '0.1s' }}
             >
               <h2 className="text-3xl font-bold mb-4 text-white">Ready to start collecting memories?</h2>
             </div>
@@ -310,7 +310,7 @@ const HowItWorks = () => {
               className={`mb-8 transition-all duration-1000 ${
                 ctaInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
               }`}
-              style={{ transitionDelay: '0.3s' }}
+              style={{ transitionDelay: '0.15s' }}
             >
               <p className="text-primary-foreground/80 max-w-2xl mx-auto">
                 Create your memory space in minutes and start collecting photos and videos from your special event.
@@ -320,7 +320,7 @@ const HowItWorks = () => {
               className={`transition-all duration-1000 ${
                 ctaInView ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-4 scale-95'
               }`}
-              style={{ transitionDelay: '0.4s' }}
+              style={{ transitionDelay: '0.2s' }}
             >
               <Button size="lg" variant="secondary" asChild>
                 <Link to="/pricing">Create Your Memory Space</Link>

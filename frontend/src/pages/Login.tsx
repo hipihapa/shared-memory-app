@@ -14,7 +14,10 @@ import { signInWithPopup, signInWithEmailAndPassword, signInWithEmailLink } from
 import { getUserSpaceId, checkUserExists } from '@/services/api';
 import { IoLogoGoogle } from 'react-icons/io5';
 import { useAuth } from '@/contexts/AuthContext';
-import { Eye, EyeOff } from 'lucide-react';
+
+import { validateEmail } from '@/lib/utils';
+import { EmailInput } from '@/components/ui/email-input';
+import { PasswordInput } from '@/components/ui/password-input';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -24,11 +27,21 @@ const Login = () => {
     password: '',
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const [emailValidation, setEmailValidation] = useState<{ isValid: boolean; message: string } | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    
+    // Validate email in real-time
+    if (name === 'email') {
+      if (value.trim() === '') {
+        setEmailValidation(null);
+      } else {
+        const validation = validateEmail(value);
+        setEmailValidation(validation);
+      }
+    }
   };
 
   const handleGoogleSignIn = async () => {
@@ -72,9 +85,16 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Basic validation
+    // Enhanced validation with email validation
     if (!formData.email || !formData.password) {
       toast.error("Please enter your email and password");
+      return;
+    }
+    
+    // Validate email format before submission
+    const emailValidation = validateEmail(formData.email);
+    if (!emailValidation.isValid) {
+      toast.error(emailValidation.message);
       return;
     }
     
@@ -146,17 +166,20 @@ const Login = () => {
             
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
-                  <Input 
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={formData.email}
-                    onChange={handleChange}
-                  />
-                </div>
+                <EmailInput
+                  id="email"
+                  name="email"
+                  label="Email Address"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="you@example.com"
+                  required
+                  onValidationChange={(isValid) => {
+                    if (formData.email.trim() !== '') {
+                      setEmailValidation({ isValid, message: isValid ? 'Email format is valid' : 'Invalid email format' });
+                    }
+                  }}
+                />
                 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -165,23 +188,14 @@ const Login = () => {
                       Forgot password?
                     </Link>
                   </div>
-                  <div className="relative">
-                    <Input 
-                      id="password"
-                      name="password"
-                      placeholder="Enter your password"
-                      type={showPassword ? "text" : "password"}
-                      value={formData.password}
-                      onChange={handleChange}
-                    />
-                    <button
-                      type="button"
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
-                    </button>
-                  </div>
+                  <PasswordInput
+                    id="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="Enter your password"
+                    showStrength={false}
+                  />
                 </div>
                 
                 <Button type="submit" className="w-full" disabled={isLoading}>
